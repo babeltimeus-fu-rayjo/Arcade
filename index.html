@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1220">
+  <meta name="description" content="A small collection of browser games. Pick one and play.">
+  <title>Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕹️</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><span aria-hidden="true">🕹️</span> Arcade</a>
+      <p class="tagline">Small browser games. No install, no sign-up. Works on your phone.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section aria-labelledby="games-heading">
+      <h2 id="games-heading" class="section-title">Games</h2>
+      <ul class="game-grid" id="game-grid">
+        <noscript><li class="game-card"><div class="game-card-inner"><p>Enable JavaScript to see the games.</p></div></li></noscript>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Hosted on GitHub Pages · <a href="https://github.com/babeltimeus-fu-rayjo/Arcade">Source</a></p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { games } from './assets/js/games.js';
+
+    const grid = document.getElementById('game-grid');
+
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    for (const game of games) {
+      const li = el('li', 'game-card');
+      const link = el('a', 'game-card-link');
+      link.href = game.path;
+      link.setAttribute('aria-label', `Play ${game.title}`);
+
+      link.append(el('div', 'game-card-icon', game.icon));
+      const body = el('div', 'game-card-body');
+      body.append(el('h3', null, game.title), el('p', null, game.tagline));
+      if (game.tags?.length) {
+        const tags = el('ul', 'tags');
+        for (const tag of game.tags) tags.append(el('li', null, tag));
+        body.append(tags);
+      }
+      link.append(body, el('span', 'game-card-cta', 'Play →'));
+      li.append(link);
+      grid.append(li);
+    }
+
+    // Placeholder so the page reads as a growing collection.
+    const soon = el('li', 'game-card soon');
+    const inner = el('div', 'game-card-inner');
+    inner.append(el('div', 'game-card-icon', '✨'), el('h3', null, 'More coming soon'), el('p', null, 'New games land here as they are added to the collection.'));
+    soon.append(inner);
+    grid.append(soon);
+  </script>
+</body>
+</html>

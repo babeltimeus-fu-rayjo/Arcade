@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1220">
+  <meta name="description" content="Target Rush: tap the targets before their rings run out.">
+  <title>Target Rush · Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="game-page">
+  <main class="game-shell">
+
+    <!-- Menu -->
+    <section class="screen screen-menu" id="screen-menu">
+      <a class="back-link" href="../../">← Arcade</a>
+      <div class="card menu-card">
+        <div class="game-icon" aria-hidden="true">🎯</div>
+        <h1>Target Rush</h1>
+        <p class="lede">Targets pop up around the arena. Tap each one before its ring runs out.</p>
+        <p class="config-summary" id="config-summary"></p>
+        <div class="menu-actions">
+          <button class="btn btn-primary btn-lg" id="btn-start" type="button">Start</button>
+          <button class="btn btn-ghost btn-lg" id="btn-settings" type="button">Settings</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Game -->
+    <section class="screen screen-game" id="screen-game" hidden>
+      <header class="hud">
+        <div class="hud-time" id="hud-time" aria-label="Time remaining">0:15</div>
+        <div class="hud-stats">
+          <span class="hud-stat good" title="Hit"><span aria-hidden="true">✓</span> <b id="hud-hits">0</b><span class="visually-hidden"> hit</span></span>
+          <span class="hud-stat bad" title="Missed"><span aria-hidden="true">✗</span> <b id="hud-misses">0</b><span class="visually-hidden"> missed</span></span>
+          <span class="hud-stat muted" title="Targets shown"><span aria-hidden="true">◎</span> <b id="hud-spawned">0</b>/<b id="hud-total">25</b></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-quit" type="button">End</button>
+      </header>
+      <div class="arena" id="arena">
+        <svg class="paths" id="paths" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="overlay countdown" id="countdown" hidden>
+          <span class="countdown-value" id="countdown-value">3</span>
+          <span class="countdown-hint" id="countdown-hint" hidden></span>
+        </div>
+        <div class="overlay paused" id="paused" hidden>
+          <div><strong>Paused</strong><span>Tap or press Esc to resume</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="screen screen-results" id="screen-results" hidden>
+      <div class="card results-card">
+        <p class="results-kicker" id="results-kicker">Time's up!</p>
+        <div class="accuracy">
+          <span id="res-accuracy">0</span><small>%</small>
+          <span class="accuracy-label">accuracy</span>
+        </div>
+        <p class="titles-heading">Your titles</p>
+        <div class="titles" id="titles"></div>
+        <dl class="results-grid">
+          <div><dt>Hit</dt><dd class="good" id="res-hits">0</dd></div>
+          <div><dt>Missed</dt><dd class="bad" id="res-misses">0</dd></div>
+          <div><dt>Targets</dt><dd id="res-spawned">0/0</dd></div>
+          <div><dt>Avg reaction</dt><dd id="res-reaction">—</dd></div>
+          <div><dt>Best streak</dt><dd id="res-streak">0</dd></div>
+          <div><dt>Stray taps</dt><dd id="res-whiffs">0</dd></div>
+        </dl>
+        <div class="menu-actions">
+          <button class="btn btn-primary btn-lg" id="btn-again" type="button">Play again</button>
+          <button class="btn btn-ghost" id="btn-settings-2" type="button">Settings</button>
+          <a class="btn btn-ghost" href="../../">Arcade</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Settings (rendered by shared/ui/settings-dialog.js) -->
+  <dialog id="settings-dialog" aria-labelledby="settings-title"></dialog>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

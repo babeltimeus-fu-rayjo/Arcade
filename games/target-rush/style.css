@@ -1,0 +1,136 @@
+/* Target Rush: arena, targets and path outlines. Page chrome and the settings
+   dialog are shared in assets/css/site.css. */
+
+/* ---- Arena ---- */
+.arena {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 0.6rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  background-color: var(--bg-2);
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(124, 156, 255, 0.08), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: crosshair;
+}
+
+/* ---- Path outlines for moving targets ---- */
+.paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.path-line {
+  fill: none;
+  stroke: rgba(180, 196, 255, 0.34);
+  stroke-width: 1.5px;
+  stroke-dasharray: 5 5;
+  stroke-linejoin: round;
+  animation: path-march 4s linear infinite;
+  transition: opacity 0.3s ease;
+}
+.path-line.gone { opacity: 0; }
+@keyframes path-march {
+  to { stroke-dashoffset: -20; }
+}
+
+/* ---- Targets ---- */
+.target {
+  --hue: 130;
+  position: absolute;
+  width: var(--size, 48px);
+  height: var(--size, 48px);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
+  will-change: transform;
+  cursor: pointer;
+}
+.target-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: target-in 0.12s ease-out;
+}
+.target svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* start the ring at 12 o'clock and let it drain clockwise */
+  transform: rotate(90deg) scaleX(-1);
+}
+.ring-track { fill: none; stroke: rgba(255, 255, 255, 0.14); stroke-width: 9; }
+.ring {
+  fill: none;
+  stroke: hsl(var(--hue) 90% 58%);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 282.743; /* 2 * pi * 45 */
+  stroke-dashoffset: 0;
+}
+.core {
+  position: absolute;
+  inset: 18%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, hsl(var(--hue) 90% 80%), hsl(var(--hue) 80% 48%) 70%);
+  box-shadow: 0 0 18px hsl(var(--hue) 90% 58% / 0.55);
+}
+.label {
+  font-size: calc(var(--size, 48px) * 0.42);
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.badge {
+  position: absolute;
+  top: -4%;
+  right: -4%;
+  min-width: 1.5em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: #fff;
+  color: #10142a;
+  font-size: calc(var(--size, 48px) * 0.26);
+  font-weight: 800;
+  line-height: 1.5em;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.target.tapped .target-body { animation: target-tap 0.25s ease-out; }
+/* Resolving beats the tap pulse, so a double target pops like any other. */
+.target.hit,
+.target.miss { pointer-events: none; }
+.target.hit .target-body { animation: target-hit 0.2s ease-out forwards; }
+.target.miss .target-body { animation: target-miss 0.28s ease-in forwards; }
+
+@keyframes target-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes target-hit {
+  to { transform: scale(1.6); opacity: 0; }
+}
+@keyframes target-miss {
+  to { transform: scale(0.5); opacity: 0; filter: grayscale(1); }
+}
+@keyframes target-tap {
+  50% { transform: scale(1.18); }
+}

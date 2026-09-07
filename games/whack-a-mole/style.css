@@ -1,0 +1,148 @@
+/* Whack-a-Mole: the keyboard board and its moles. Page chrome and the settings
+   dialog are shared in assets/css/site.css. */
+
+.board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 0.6rem 0.6rem;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background-color: var(--bg-2);
+  background-image: radial-gradient(circle at 50% 40%, rgba(124, 156, 255, 0.08), transparent 70%);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.keys {
+  --unit: 48px;
+  position: relative;
+  flex: none;
+}
+
+/* ---- Keycaps ---- */
+.key {
+  --hue: 130;
+  --remaining: 1;
+  --scale: 1;
+  position: absolute;
+  left: calc(var(--unit) * var(--col));
+  top: calc(var(--unit) * var(--row));
+  width: calc(var(--unit) * 0.92);
+  height: calc(var(--unit) * 0.92);
+  border-radius: calc(var(--unit) * 0.14);
+  background: linear-gradient(#2a3150, #1c2136);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.cap {
+  position: absolute;
+  top: 7%;
+  left: 10%;
+  font-size: calc(var(--unit) * 0.24);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.key.up .cap { color: #fff; }
+
+/* ---- Hole and mole ---- */
+.hole {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 9%;
+  height: 58%;
+  border-radius: 45% 45% 40% 40% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at 50% 110%, #04060d, #0b0e1a 75%);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+.mole {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -8%;
+  height: 105%;
+  border-radius: 50% 50% 38% 38%;
+  background: radial-gradient(circle at 40% 28%, #d9a670, #8a5a2b 65%, #6b4420);
+  box-shadow: inset 0 -6px 10px rgba(0, 0, 0, 0.25);
+  /* --scale is "how far up": 1 = fully up, 0.5 = half sunk */
+  transform: translateY(calc(110% - 110% * var(--scale)));
+  transition: transform 0.14s ease-out;
+}
+.key:not(.up) .mole { transform: translateY(110%); }
+.eye,
+.nose {
+  position: absolute;
+  border-radius: 50%;
+  background: #1a1210;
+}
+.eye { top: 30%; width: 13%; height: 13%; }
+.eye-l { left: 30%; }
+.eye-r { right: 30%; }
+.nose { top: 46%; left: 41%; width: 18%; height: 12%; background: #3d2416; }
+
+/* ---- Lifetime bar (top edge) ---- */
+.bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 9%;
+  background: hsl(var(--hue) 90% 58%);
+  transform-origin: left center;
+  transform: scaleX(var(--remaining));
+  opacity: 0;
+}
+.key.up .bar { opacity: 1; }
+.key.up {
+  border-color: hsl(var(--hue) 80% 62% / 0.85);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35), 0 0 16px hsl(var(--hue) 90% 58% / 0.45);
+}
+
+/* ---- Badge for tough moles ---- */
+.key .badge {
+  position: absolute;
+  top: 5%;
+  right: 6%;
+  min-width: 1.5em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: #fff;
+  color: #10142a;
+  font-size: calc(var(--unit) * 0.2);
+  font-weight: 800;
+  line-height: 1.5em;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Whack, miss, pulse ---- */
+.key.tapped .mole { animation: mole-pulse 0.25s ease-out; }
+.key.whacked { background: linear-gradient(#2c4a3a, #1d2f28); }
+.key.whacked .mole { animation: mole-whack 0.3s ease-out forwards; }
+.key.missed { background: linear-gradient(#4a2c33, #2f1d22); }
+.key.missed .mole { animation: mole-sink 0.3s ease-in forwards; }
+
+@keyframes mole-whack {
+  30% { transform: translateY(35%) scaleY(0.5); }
+  to { transform: translateY(115%) scaleY(0.4); opacity: 0.6; }
+}
+@keyframes mole-sink {
+  to { transform: translateY(115%); filter: grayscale(1); }
+}
+@keyframes mole-pulse {
+  50% { transform: translateY(-8%) scale(1.08); }
+}
+
+@media (max-width: 700px) {
+  .board { padding: 0.35rem; }
+}
