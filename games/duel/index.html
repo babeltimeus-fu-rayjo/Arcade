@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1220">
+  <meta name="description" content="Duel: a movie-style fight where you press the right key at the right moment.">
+  <title>Duel · Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="game-page">
+  <main class="game-shell">
+
+    <!-- Menu -->
+    <section class="screen screen-menu" id="screen-menu">
+      <a class="back-link" href="../../">← Arcade</a>
+      <div class="card menu-card">
+        <div class="game-icon" aria-hidden="true">⚔️</div>
+        <h1>Duel</h1>
+        <p class="lede">A fight that plays like a movie. When time slows down, press the key on screen before the ring runs out. Your choices change how the fight goes.</p>
+        <p class="fight-title" id="fight-title"></p>
+        <p class="fight-blurb muted" id="fight-blurb"></p>
+        <p class="config-summary" id="config-summary"></p>
+        <div class="menu-actions">
+          <button class="btn btn-primary btn-lg" id="btn-start" type="button">Fight!</button>
+          <button class="btn btn-ghost btn-lg" id="btn-settings" type="button">Settings</button>
+        </div>
+        <p class="menu-note">Keyboard only. Esc pauses.</p>
+      </div>
+    </section>
+
+    <!-- Game -->
+    <section class="screen screen-game" id="screen-game" hidden>
+      <header class="hud">
+        <div class="hearts" id="hearts" aria-label="Hearts"></div>
+        <div class="hud-stats">
+          <span class="hud-stat good" title="Prompts hit"><span aria-hidden="true">✓</span> <b id="hud-hits">0</b></span>
+          <span class="hud-stat bad" title="Prompts missed"><span aria-hidden="true">✗</span> <b id="hud-misses">0</b></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-quit" type="button">End</button>
+      </header>
+      <div class="stage" id="stage">
+        <canvas id="scene" aria-label="Fight scene"></canvas>
+        <div class="prompt" id="prompt" hidden>
+          <div class="qte-kicker" id="prompt-kicker"></div>
+          <div class="qte-keys" id="prompt-keys"></div>
+          <div class="qte-label" id="prompt-label"></div>
+          <div class="qte-sub" id="prompt-sub" hidden></div>
+          <div class="qte-bar" id="prompt-bar" hidden><i id="prompt-bar-fill"></i></div>
+        </div>
+        <div class="miniboard" id="miniboard" hidden aria-hidden="true"></div>
+        <p class="caption" id="caption"></p>
+        <div class="overlay paused" id="paused" hidden>
+          <div><strong>Paused</strong><span>Press Esc or click to resume</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="screen screen-results" id="screen-results" hidden>
+      <div class="card results-card">
+        <p class="results-kicker" id="results-kicker">Victory!</p>
+        <h2 class="results-headline" id="results-headline"></h2>
+        <p class="results-meta muted" id="results-meta"></p>
+        <p class="titles-heading">Your titles</p>
+        <div class="titles" id="titles"></div>
+        <div class="menu-actions">
+          <button class="btn btn-primary btn-lg" id="btn-again" type="button">Fight again</button>
+          <button class="btn btn-ghost" id="btn-settings-2" type="button">Settings</button>
+          <a class="btn btn-ghost" href="../../">Arcade</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Settings -->
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" id="settings-form" class="dialog-body">
+      <h2 id="settings-title">Settings</h2>
+
+      <section class="group">
+        <h3 class="group-title">Fight</h3>
+        <label class="field">
+          <span class="field-label">Scene</span>
+          <select name="fight"></select>
+        </label>
+        <div class="field">
+          <span class="field-label">When you miss a prompt</span>
+          <label class="opt opt-check"><input type="radio" name="mistakes" value="story"><span class="opt-label"><strong>Story goes on</strong> <small>the miss costs a heart and the fight takes the other path</small></span></label>
+          <label class="opt opt-check"><input type="radio" name="mistakes" value="retry"><span class="opt-label"><strong>Try again</strong> <small>the moment replays with a little more time</small></span></label>
+          <label class="opt opt-check"><input type="radio" name="mistakes" value="practice"><span class="opt-label"><strong>Practice</strong> <small>no hearts; misses are counted but the story stays on track</small></span></label>
+        </div>
+      </section>
+
+      <section class="group">
+        <h3 class="group-title">Prompts</h3>
+        <div class="field">
+          <span class="field-label">Prompt keys</span>
+          <label class="opt opt-check"><input type="radio" name="keySource" value="fixed"><span class="opt-label"><strong>Fixed per scene</strong> <small>the keys written into the fight</small></span></label>
+          <label class="opt opt-check"><input type="radio" name="keySource" value="pool"><span class="opt-label"><strong>From the practice pool</strong> <small>drawn from the keys below</small></span></label>
+        </div>
+        <div class="nested" id="pool-options">
+          <label class="opt opt-check"><input type="checkbox" name="keyLetters"><span class="opt-label">Letters</span></label>
+          <label class="opt opt-check"><input type="checkbox" name="keyNumbers"><span class="opt-label">Numbers</span></label>
+          <label class="opt opt-check"><input type="checkbox" name="keyPunctuation"><span class="opt-label">Punctuation</span></label>
+          <label class="opt opt-text">
+            <span class="opt-label">Custom keys (overrides the groups above)</span>
+            <input type="text" name="keyPool" placeholder="e.g. asdfjkl;" maxlength="64" autocomplete="off" spellcheck="false" autocapitalize="off">
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">Prompt timing</span>
+          <select name="windowScale">
+            <option value="1.6">Relaxed (60% more time)</option>
+            <option value="1.25">Easy (25% more time)</option>
+            <option value="1">Normal</option>
+            <option value="0.75">Quick (25% less time)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Slow motion during prompts</span>
+          <select name="slowmo">
+            <option value="0.1">Dramatic</option>
+            <option value="0.2">Normal</option>
+            <option value="0.5">Light</option>
+            <option value="1">Off</option>
+          </select>
+        </label>
+        <label class="opt opt-check">
+          <input type="checkbox" name="showBoard">
+          <span class="opt-label">Show the keyboard with the key lit during prompts</span>
+        </label>
+        <label class="opt opt-check">
+          <input type="checkbox" name="sound">
+          <span class="opt-label">Sound effects (whooshes, clangs and thuds)</span>
+        </label>
+      </section>
+
+      <menu>
+        <button type="button" class="btn btn-ghost" id="btn-reset">Reset</button>
+        <button type="submit" value="cancel" class="btn btn-ghost" formnovalidate>Cancel</button>
+        <button type="submit" value="save" class="btn btn-primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

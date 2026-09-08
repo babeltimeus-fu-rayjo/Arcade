@@ -29,6 +29,7 @@
   <footer class="site-footer">
     <div class="wrap">
       <p>Hosted on GitHub Pages · <a href="https://github.com/babeltimeus-fu-rayjo/Arcade">Source</a></p>
+      <p class="version" id="version">Version …</p>
     </div>
   </footer>
 
@@ -62,6 +63,37 @@
       li.append(link);
       grid.append(li);
     }
+
+    // Which build is this? version.json is stamped at deploy time (and served live by the dev server).
+    (async () => {
+      const node = document.getElementById('version');
+      try {
+        const res = await fetch('version.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(String(res.status));
+        const v = await res.json();
+        const when = new Date(v.builtAt);
+        const stamp = Number.isNaN(when.getTime()) ? v.builtAt : when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'long' });
+        node.replaceChildren('Version ');
+        if (v.commit) {
+          const link = el('a', null, v.short || v.commit.slice(0, 7));
+          link.href = `https://github.com/${v.repo}/commit/${v.commit}`;
+          link.title = v.message || '';
+          node.append(link);
+        } else {
+          node.append('unknown commit');
+        }
+        node.append(` · ${v.source === 'github-actions' ? 'deployed' : 'local build'} ${stamp}`);
+        if (v.branch && v.branch !== 'main' && v.branch !== 'HEAD') node.append(` · ${v.branch}`);
+        if (v.dirty) node.append(' · uncommitted changes');
+        if (v.commit) {
+          const time = el('time', null, '');
+          time.dateTime = v.builtAt;
+          node.append(time);
+        }
+      } catch {
+        node.textContent = 'Version unknown (no version.json in this build)';
+      }
+    })();
 
     // Placeholder so the page reads as a growing collection.
     const soon = el('li', 'game-card soon');

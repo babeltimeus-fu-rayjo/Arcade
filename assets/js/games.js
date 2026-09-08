@@ -24,4 +24,24 @@ export const games = [
     path: 'games/whack-a-mole/',
     tags: ['reflex', 'keyboard only', 'solo'],
   },
+  {
+    id: 'jigsaw',
+    title: 'Jigsaw',
+    icon: '🧩',
+    tagline: 'Drag the pieces into the frame to rebuild the picture.',
+    description:
+      'A classic jigsaw with real interlocking pieces. Choose how many pieces, pick a picture or load your own photo, and drag pieces into the frame; they snap when close.',
+    path: 'games/jigsaw/',
+    tags: ['puzzle', 'mouse or touch', 'solo'],
+  },
+  {
+    id: 'duel',
+    title: 'Duel',
+    icon: '⚔️',
+    tagline: 'Movie-style fights against a robot, an ogre, a skeleton and a dragon.',
+    description:
+      'Branching fight scenes: when time slows, press the key on screen before the ring runs out. Duck, jump, parry, roll and strike; your choices change how each fight goes.',
+    path: 'games/duel/',
+    tags: ['reflex', 'keyboard only', 'story', 'solo'],
+  },
 ];

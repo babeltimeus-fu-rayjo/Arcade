@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f1220">
+  <title>Duel clip gallery · Arcade Lab</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <style>
+    .lab-wrap { width: min(1400px, 100% - 2rem); margin-inline: auto; }
+    .lab-header { padding: clamp(1.5rem, 4vw, 3rem) 0 1rem; }
+    .lab-header h1 { margin: 0.25rem 0; font-size: clamp(1.6rem, 4vw, 2.25rem); letter-spacing: -0.02em; }
+    .lab-kicker { margin: 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .back-inline { color: var(--muted); font-weight: 600; text-decoration: none; }
+    .controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin: 0.5rem 0 1.25rem; font-size: 0.9rem; }
+    .controls label { display: flex; gap: 0.4rem; align-items: center; }
+    .clip { margin: 0 0 1.25rem; }
+    .clip h2 { margin: 0 0 0.4rem; font-size: 1rem; display: flex; gap: 0.75rem; align-items: baseline; }
+    .clip h2 small { color: var(--muted); font-weight: 500; }
+    .frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; }
+    .frame { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #1a1440; }
+    .frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .frame span { position: absolute; left: 6px; bottom: 4px; font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.75); text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+  </style>
+</head>
+<body>
+  <header class="lab-header">
+    <div class="lab-wrap">
+      <a class="back-inline" href="../../">← Arcade</a>
+      <p class="lab-kicker" style="margin-top:1rem">Lab</p>
+      <h1>Duel clip gallery</h1>
+      <p class="tagline">Every animation clip as still frames, for reviewing poses without playing the fight.</p>
+      <div class="controls">
+        <label>Camera
+          <select id="camera"><option value="wide">wide</option><option value="action">action</option><option value="close">close</option><option value="hero">hero</option><option value="foe">foe</option></select>
+        </label>
+        <label>Foe
+          <select id="foe"><option value="robot">robot</option><option value="ogre">ogre</option><option value="skeleton">skeleton</option><option value="dragon">dragon</option></select>
+        </label>
+        <label>Place
+          <select id="theme"><option value="ruins">ruins</option><option value="bridge">bridge</option><option value="crypt">crypt</option><option value="peak">peak</option></select>
+        </label>
+        <label>Frames per clip <input id="frames" type="number" min="2" max="12" value="6"></label>
+        <label><input id="slow" type="checkbox"> slow-motion look</label>
+        <button class="btn btn-ghost btn-sm" id="rerender" type="button">Re-render</button>
+      </div>
+    </div>
+  </header>
+  <main class="lab-wrap" id="gallery"></main>
+
+  <script type="module">
+    import { CLIPS } from '../../games/duel/clips.js';
+    import { Scene } from '../../games/duel/scene.js';
+
+    const gallery = document.getElementById('gallery');
+    const camera = document.getElementById('camera');
+    const framesInput = document.getElementById('frames');
+    const slow = document.getElementById('slow');
+    const foe = document.getElementById('foe');
+    const theme = document.getElementById('theme');
+    const PROJECTILE = { robot: 'rock', ogre: 'boulder', skeleton: 'bone', dragon: 'fireball' };
+
+    function build() {
+      gallery.replaceChildren();
+      const count = Math.max(2, Math.min(12, Number(framesInput.value) || 6));
+      for (const [name, clip] of Object.entries(CLIPS)) {
+        const section = document.createElement('section');
+        section.className = 'clip';
+        const h = document.createElement('h2');
+        h.textContent = name;
+        const small = document.createElement('small');
+        small.textContent = clip.bursts?.length ? `bursts at ${clip.bursts.map((b) => b.at).join(', ')}` : 'no bursts';
+        h.append(small);
+        const frames = document.createElement('div');
+        frames.className = 'frames';
+        for (let i = 0; i < count; i++) {
+          const t = count === 1 ? 0 : i / (count - 1);
+          const frame = document.createElement('div');
+          frame.className = 'frame';
+          const canvas = document.createElement('canvas');
+          const label = document.createElement('span');
+          label.textContent = `t = ${t.toFixed(2)}`;
+          frame.append(canvas, label);
+          frames.append(frame);
+          const scene = new Scene(canvas);
+          // Two renders: the first primes velocities so stepping legs and trails show.
+          const render = (tt) => scene.render({ foe: foe.value, theme: theme.value, projectile: PROJECTILE[foe.value], clip: name, t: tt, beatKey: name, camera: camera.value, timeScale: slow.checked ? 0.2 : 1, progress: 0.5, sceneTime: 4000 + tt * 1500, dtScene: 40, dtReal: 40, snapCamera: true });
+          requestAnimationFrame(() => { render(Math.max(0, t - 0.03)); render(t); });
+          frame.dataset.render = '1';
+          canvas.__render = () => { render(Math.max(0, t - 0.03)); render(t); };
+        }
+        section.append(h, frames);
+        gallery.append(section);
+      }
+    }
+    document.getElementById('rerender').addEventListener('click', build);
+    camera.addEventListener('change', build);
+    slow.addEventListener('change', build);
+    foe.addEventListener('change', build);
+    theme.addEventListener('change', build);
+    build();
+    window.__renderAll = () => { for (const c of document.querySelectorAll('.frame canvas')) c.__render?.(); };
+  </script>
+</body>
+</html>

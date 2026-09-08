@@ -9,6 +9,7 @@ import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { versionInfo } from './stamp.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const port = Number(process.argv[2]) || 8080;
@@ -32,6 +33,12 @@ createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     let pathname = decodeURIComponent(url.pathname);
+    if (pathname === '/version.json') {
+      // Live stamp of the checkout being served, so the landing page shows what you're looking at.
+      const body = JSON.stringify(versionInfo(), null, 2);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }).end(body);
+      return;
+    }
     let filePath = normalize(join(root, pathname));
     if (!filePath.startsWith(root + sep) && filePath !== root) {
       res.writeHead(403).end('Forbidden');

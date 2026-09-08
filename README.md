@@ -11,6 +11,8 @@ No build step, no framework, no dependencies: HTML, CSS and ES modules.
 | --- | --- | --- |
 | 🎯 Target Rush | `games/target-rush/` | Timed round. Targets pop up around the arena, each with a ring that drains over its lifetime. Tap them before the ring empties. Default round: 15 seconds, 25 targets. Ends with hits, misses and accuracy. Optional bursts pacing and stackable modules (moving targets, double tap, keyboard, shrinking). |
 | 🔨 Whack-a-Mole | `games/whack-a-mole/` | Keyboard only. The board is a QWERTY keyboard; moles pop up on keys and you press the matching key to whack them. Same round settings as Target Rush (length, count, lifetime, bursts) plus a choice of key groups or a custom key pool, and modules for tough (two-whack) and sinking moles. |
+| ⚔️ Duel | `games/duel/` | Keyboard only. A three-act branching fight that plays like a movie: when time slows, press the key on screen before the ring runs out (single key, sequence, hold, mash, or a choice that changes the path). Duck, jump, parry, dodge a thrown rock, roll, push out of a grapple, then block, brace, weave, climb a dizzy robot and pick your finisher. Settings for what a miss does (story goes on, try again, practice), fixed vs practice-pool keys, timing, slow-motion strength, an on-screen keyboard and sound. Fights are plain data scripts. |
+| 🧩 Jigsaw | `games/jigsaw/` | Classic jigsaw with interlocking pieces cut from a picture. Settings: number of pieces (4 to 200, rounded to a rows × cols grid), one of three built-in pictures or your own photo, and an optional faint guide in the frame. Drag with mouse, touch or pen; pieces snap when close. Ends with time, moves and three titles. |
 
 ## Project layout
 
@@ -25,6 +27,10 @@ shared/engine/engine.js    Round engine: clock, spawning, hits/misses, stats, ev
 shared/engine/schedule.js  Deterministic round plan (steady or bursts timing, non-overlapping placement)
 shared/engine/options.js   Shared settings helpers: limits, bursts, module options, persistence
 shared/ui/settings-dialog.js  Settings dialog (round, bursts, modules + nested options, game extras)
+shared/ui/titles.js        End-of-round titles
+shared/ui/scratcher.js     Scratch-card mechanic: canvas coating erased by dragging
+lab/scratcher/index.html   Test page for the scratcher, with a picture hidden underneath
+lab/duel-clips/index.html  Still-frame gallery of every Duel animation clip
 games/target-rush/
   index.html               Screens: menu, game (HUD + arena), results, settings dialog shell
   style.css                Arena, targets and path outlines
@@ -36,6 +42,26 @@ games/target-rush/
   modules/double.js        Some targets need two hits
   modules/keys.js          Hit targets with keyboard keys mapped to screen position
   modules/shrink.js        Smallest example module + documentation of the module API
+games/duel/
+  index.html               Screens: menu, stage (canvas + prompt overlay + captions), results, settings dialog
+  style.css                Prompt key caps and rings, mini keyboard, captions
+  main.js                  UI wiring: frame loop, prompt overlay, hearts, dialog, results and titles
+  player.js                Beat player: time-scaled clock, prompt judging, branching, mistake modes, key sources
+  scene.js                 Canvas renderer: ruins backdrop, shape-built knight and robot, particles, camera, effects
+  clips.js                 Animation clips (rig poses over time) for every beat
+  settings.js              Defaults and normalisation
+  fights/ruins-robot.js    Fight script: the robot (three acts) and the script format's documentation
+  fights/bridge-ogre.js    Fight script: the ogre on the bridge (heavy smashes, boulders)
+  fights/crypt-skeleton.js Fight script: the skeleton knight in the crypt (quick jabs, bones)
+  fights/peak-dragon.js    Fight script: the dragonling on the peak (fireballs, tail slam)
+games/jigsaw/
+  index.html               Screens: menu, game (HUD + canvas board + completion card), settings dialog
+  style.css                Board, completion card, picture picker
+  main.js                  Wires settings, puzzle and UI; timer, peek, titles
+  puzzle.js                The puzzle on one canvas: frame, sprites, scatter, drag, snap, complete
+  pieces.js                Geometry: rows x cols from a piece count, interlocking edges, piece outlines
+  pictures.js              Three built-in SVG pictures + image loading
+  settings.js              Defaults and normalisation (pieces, picture, guide)
 games/whack-a-mole/
   index.html               Screens: menu, game (HUD + keyboard board), results, settings dialog shell
   style.css                Keycaps, holes, moles, lifetime bars
@@ -66,12 +92,20 @@ python3 -m http.server 8080
 
 ## Deploy to GitHub Pages
 
-1. Push to `main`.
-2. In the repository, open **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**, branch `main`, folder `/ (root)`. Save.
-4. After a minute the site is live at `https://<user>.github.io/Arcade/`.
+`.github/workflows/pages.yml` deploys the site on every push to `main`. Before it deploys, it
+runs `node scripts/stamp.mjs`, which writes `version.json` (commit, branch, commit message,
+commit time, build time). The landing page footer reads that file and shows
+"Version abc1234 · deployed <date>" with a link to the commit, so it is always clear which build
+is live. Locally, the dev server serves `/version.json` from the working tree instead, and adds
+"uncommitted changes" when the checkout is dirty.
 
-`.nojekyll` is included so GitHub serves the files exactly as committed.
+One-time setup: in the repository's **Settings → Pages**, set **Build and deployment** to
+**GitHub Actions** (or run `gh api -X PUT repos/<owner>/<repo>/pages -f build_type=workflow`).
+Until then Pages keeps deploying straight from the branch, which works too but has no
+`version.json`, so the footer says the version is unknown.
+
+`.nojekyll` is included so GitHub serves the files exactly as committed; `version.json` is
+generated and ignored by git.
 
 ## Adding a game
 
@@ -168,6 +202,64 @@ enthusiastic play (many stray presses, watching most targets go by, stopping for
 Only the best title of each group is shown, a round with both kinds shows two earned and one
 silly, and a special round earns a bonus fourth. The wording is always encouraging, since the
 games are aimed at young typists. Add or tweak titles in that one file.
+
+## Duel
+
+A fight is a plain data script (see `games/duel/fights/ruins-robot.js` for the format): a graph
+of beats, each with an animation clip and either a plain `next`, a prompt with `success` and
+`fail` branches, or an `end`. "Robot in the Ruins" runs three acts and 11 to 12 prompts on a
+winning path (about 45 seconds): act 1 probes the robot (duck, jump, parry a jab, duck or jump a
+thrown rock), act 2 is the charge and the grapple, and in act 3 the robot powers up (red glow,
+shorter prompt windows) with an overhead smash to block, a ground pound to brace against, a
+double swing to weave through, a dizzy spell where you climb it and bonk its head, the combo, and a
+choice of finisher (sword slash or shield bash). Five hearts absorb misses in story mode.
+
+Four foes, each with its own fight script, look and place, chosen from the Scene setting: the
+**robot** in the ruins (rocks), the **ogre** on the bridge (slow and heavy: smashes, a ground pound,
+boulders, a rage phase), the **skeleton knight** in the crypt (fast: jabs to parry, double swings,
+thrown bones, shorter windows once its bones glow) and the **dragonling** on the mountain peak
+(fireballs, claw swipes, a bite to parry, a tail slam, fire breath). A fight script names its
+`foe`, `projectile` (rock, boulder, bone, fireball) and `scene` (ruins, bridge, crypt, peak);
+scene.js draws the matching body, weapon, face set and backdrop, so every existing clip works on
+every foe. Prompt types: **key**, **sequence**, **hold**, **mash** and
+**choice** (any option's key succeeds, into its own branch). When a prompt opens, time slows
+(the clip keeps creeping along) while the prompt window counts real milliseconds; a wrong key
+burns a quarter of the window. Settings:
+
+- **When you miss a prompt**: *Story goes on* (the miss costs a heart and the fight follows the
+  fail branch; at zero hearts the knockdown ending plays), *Try again* (the beat replays with 25%
+  more time each retry, up to five), or *Practice* (no hearts; misses are counted but the story
+  stays on the success path).
+- **Prompt keys**: *Fixed per scene* (the keys written into the script) or *From the practice
+  pool* (letters, numbers, punctuation or a custom pool; distinct keys within a prompt, never the
+  previous prompt's key, and choice prompts pick keys from the left and right halves of the board).
+- Prompt timing multiplier, slow-motion strength, and an on-screen keyboard that lights the key.
+
+The fighters are shape-built on canvas (a knight and a robot): outlined, top-lit shapes with
+jointed limbs, boots and gloves, big heads with faces that change per beat (calm, fierce, shock,
+hurt, happy; angry for the robot), a plume and antenna on a spring that lag behind movement,
+legs that step when a fighter moves, and motion trails on fast swings. Beats pose them through
+the clips in `clips.js`, which follow the animation basics for combat: a slow wind-up, a strike
+that snaps in under 100 ms, a held impact frame (hit-stop, declared per clip and enforced by the
+player), overshoot that settles, and exaggerated recoil with stretch-and-squash. Impacts add a
+one-frame white pop, a camera punch, screen shake, spark streaks, an expanding ring and, when
+sound is on, synthesised whooshes, clangs and thuds (no audio files). Slow motion is a
+letterboxed tint with speed lines. The backdrop has stars, a sun with rays, four
+parallax layers of hills and ruins, drifting dust and foreground rubble. `lab/duel-clips/`
+renders every clip as still frames (choose camera and frame count) for reviewing poses without
+playing. Results reuse the shared titles. Seeds make a fight replay identical given the same inputs,
+which keeps the door open for a two-player version over the WebRTC groundwork.
+
+## Jigsaw
+
+Pieces are real jigsaw shapes: every interior edge is decided once (knob one way or the
+other) so neighbours interlock, and each piece is pre-rendered from the picture clipped to
+its outline with a bevelled edge. The picture's frame sits in the middle of the board (top
+on portrait screens) with the loose pieces scattered around it; a piece dropped within a
+short distance of its spot snaps in and locks. Hold **Peek** to see the picture, **Shuffle**
+restarts with a new scatter, and Esc ends the puzzle. Piece count is rounded to a grid of
+near-square pieces (the Settings dialog shows the exact rows × cols). Your own photo is
+loaded locally from your device and never leaves the browser; it is kept for the session only.
 
 ## Multiplayer groundwork
 

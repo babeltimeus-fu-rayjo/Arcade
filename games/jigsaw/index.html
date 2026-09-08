@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1220">
+  <meta name="description" content="Jigsaw: drag the pieces into the frame to rebuild the picture.">
+  <title>Jigsaw · Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="game-page">
+  <main class="game-shell">
+
+    <!-- Menu -->
+    <section class="screen screen-menu" id="screen-menu">
+      <a class="back-link" href="../../">← Arcade</a>
+      <div class="card menu-card">
+        <div class="game-icon" aria-hidden="true">🧩</div>
+        <h1>Jigsaw</h1>
+        <p class="lede">Drag the pieces into the frame to put the picture back together. Pieces snap into place when they're close.</p>
+        <p class="config-summary" id="config-summary"></p>
+        <div class="menu-actions">
+          <button class="btn btn-primary btn-lg" id="btn-start" type="button">Start</button>
+          <button class="btn btn-ghost btn-lg" id="btn-settings" type="button">Settings</button>
+        </div>
+        <p class="menu-note">Mouse, touch or pen. Pick the number of pieces and a picture in Settings, or load your own photo.</p>
+      </div>
+    </section>
+
+    <!-- Game -->
+    <section class="screen screen-game" id="screen-game" hidden>
+      <header class="hud">
+        <div class="hud-time" id="hud-time" aria-label="Time">0:00</div>
+        <div class="hud-stats">
+          <span class="hud-stat good" title="Pieces placed"><span aria-hidden="true">🧩</span> <b id="hud-placed">0</b>/<b id="hud-total">12</b></span>
+          <span class="hud-stat muted" title="Moves"><span aria-hidden="true">↔</span> <b id="hud-moves">0</b><span class="visually-hidden"> moves</span></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-peek" type="button" title="Hold to see the picture">Peek</button>
+        <button class="btn btn-ghost btn-sm" id="btn-shuffle" type="button">Shuffle</button>
+        <button class="btn btn-ghost btn-sm" id="btn-quit" type="button">End</button>
+      </header>
+      <div class="board" id="board">
+        <canvas id="puzzle" aria-label="Puzzle board"></canvas>
+        <div class="overlay done" id="done" hidden>
+          <div class="card done-card">
+            <p class="results-kicker">Puzzle complete!</p>
+            <div class="accuracy"><span id="done-time">0:00</span><span class="accuracy-label">time</span></div>
+            <p class="done-meta muted" id="done-meta"></p>
+            <p class="titles-heading">Your titles</p>
+            <div class="titles" id="titles"></div>
+            <div class="menu-actions">
+              <button class="btn btn-primary btn-lg" id="btn-again" type="button">Play again</button>
+              <button class="btn btn-ghost" id="btn-settings-2" type="button">Settings</button>
+              <a class="btn btn-ghost" href="../../">Arcade</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Settings -->
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" id="settings-form" class="dialog-body">
+      <h2 id="settings-title">Settings</h2>
+
+      <section class="group">
+        <h3 class="group-title">Puzzle</h3>
+        <label class="field">
+          <span class="field-label">Number of pieces <output id="pieces-hint"></output></span>
+          <input type="number" name="pieces" min="4" max="200" step="1" inputmode="numeric" required>
+        </label>
+        <label class="opt opt-check">
+          <input type="checkbox" name="guide">
+          <span class="opt-label">Show a faint copy of the picture in the frame</span>
+        </label>
+      </section>
+
+      <section class="group">
+        <h3 class="group-title">Picture</h3>
+        <div class="picture-grid" id="picture-grid" role="radiogroup" aria-label="Picture"></div>
+        <label class="field upload-field">
+          <span class="field-label">Or load your own picture</span>
+          <input type="file" name="upload" accept="image/*">
+          <small class="muted" id="upload-name"></small>
+        </label>
+      </section>
+
+      <menu>
+        <button type="button" class="btn btn-ghost" id="btn-reset">Reset</button>
+        <button type="submit" value="cancel" class="btn btn-ghost" formnovalidate>Cancel</button>
+        <button type="submit" value="save" class="btn btn-primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

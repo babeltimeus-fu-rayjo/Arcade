@@ -133,6 +133,8 @@ a { color: var(--accent); }
 .game-card.soon { opacity: 0.6; border-style: dashed; box-shadow: none; }
 .game-card.soon:hover { transform: none; border-color: var(--border); }
 .site-footer { padding: 2rem 0 3rem; color: var(--muted); font-size: 0.9rem; }
+.site-footer p { margin: 0.25rem 0; }
+.site-footer .version { font-size: 0.8rem; font-variant-numeric: tabular-nums; opacity: 0.85; }
 
 /* ============================================================
    Game page chrome, shared by every game

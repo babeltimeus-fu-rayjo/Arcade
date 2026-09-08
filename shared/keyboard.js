@@ -63,3 +63,15 @@ export function parsePool(text) {
 export function keysForGroups(groups) {
   return KEYS.filter((k) => groups?.[k.category]);
 }
+
+/**
+ * Keys a game may use for these settings ({ letters, numbers, punctuation, pool }):
+ * the custom pool if it names any key on the board, else the enabled groups,
+ * else letters.
+ */
+export function activeKeys(keySettings) {
+  const pool = parsePool(keySettings?.pool).filter((k) => boardKeyFor(k.key));
+  if (pool.length) return pool;
+  const groups = keysForGroups(keySettings);
+  return groups.length ? groups : KEYS.filter((k) => k.category === 'letters');
+}

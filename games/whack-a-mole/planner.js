@@ -1,15 +1,9 @@
-import { KEYS, boardKeyFor, keysForGroups, parsePool } from '../../shared/keyboard.js';
+import { activeKeys } from '../../shared/keyboard.js';
+
+export { activeKeys };
 
 const FADE_MS = 300; // a whacked or missed mole is still animating for about this long
 const MIN_LIFE_MS = 500;
-
-/** Keys moles may use for these settings: the custom pool if given, else the enabled groups. */
-export function activeKeys(keySettings) {
-  const pool = parsePool(keySettings?.pool).filter((k) => boardKeyFor(k.key));
-  if (pool.length) return pool;
-  const groups = keysForGroups(keySettings);
-  return groups.length ? groups : KEYS.filter((k) => k.category === 'letters');
-}
 
 // Which key each mole gets is decided while the round is planned, from the
 // schedule alone, so every peer sharing a seed sees the same moles.
